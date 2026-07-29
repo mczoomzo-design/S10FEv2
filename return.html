@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>คืนเครื่อง Samsung S10 FE · ครูที่ปรึกษา</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd-in">
+    <div class="hd-mark" style="background:var(--ok)"><i class="ti ti-arrow-back-up"></i></div>
+    <div>
+      <h1>คืนเครื่อง Samsung S10 FE</h1>
+      <p id="hdSub">โรงเรียนเลยอนุกูลวิทยา</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="loading" class="card" style="text-align:center;padding:40px">
+    <span class="spin" style="border-color:rgba(18,35,59,.2);border-top-color:var(--ink)"></span>
+    <p style="margin-top:12px;color:var(--steel)">กำลังตรวจสอบลิงก์…</p>
+  </div>
+
+  <div id="badToken" class="hide">
+    <div class="note err"><i class="ti ti-alert-circle"></i><div id="badTxt"></div></div>
+  </div>
+
+  <div id="main" class="hide">
+    <div class="card">
+      <div class="step"><div class="step-n"><i class="ti ti-user" style="font-size:15px"></i></div>
+        <div class="step-t" id="clsName"></div>
+        <div class="step-s" id="cnt"></div>
+      </div>
+      <input type="text" id="search" placeholder="ค้นหา รหัสนักเรียน / ชื่อ / เลขเครื่อง" style="margin-bottom:4px">
+    </div>
+    <div id="rows"></div>
+  </div>
+</div>
+
+<!-- modal คืนเครื่อง -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="modal-h"><b>บันทึกคืนเครื่อง</b><button id="mClose" aria-label="ปิด">×</button></div>
+    <div class="card" style="margin:0 0 14px;background:var(--paper-2);box-shadow:none">
+      <b id="mName" style="font-size:15px"></b>
+      <div class="mono" id="mDev" style="font-size:12.5px;color:var(--steel)"></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label>วันที่คืน <span class="req">*</span></label>
+      <input type="date" id="mDate" class="mono">
+      <div class="hint" id="mThai"></div>
+    </div>
+    <label style="margin-bottom:8px">สภาพเครื่อง <span class="req">*</span></label>
+    <div class="radios" id="conds">
+      <label class="rad" data-v="ปกติ"><input type="radio" name="cond" value="ปกติ"><span><b>ปกติ ครบถ้วน</b><small>เครื่องและอุปกรณ์ครบ</small></span></label>
+      <label class="rad" data-v="ชำรุด"><input type="radio" name="cond" value="ชำรุด"><span><b>ชำรุด</b><small>ระบุรายการและแนบภาพ</small></span></label>
+      <label class="rad" data-v="สูญหาย"><input type="radio" name="cond" value="สูญหาย"><span><b>สูญหาย</b><small>ต้องกรอกหมายเหตุ</small></span></label>
+    </div>
+    <div id="dmgPane" class="hide" style="margin-top:14px">
+      <label style="margin-bottom:8px">รายการชำรุด <span class="req">*</span></label>
+      <div class="checks" id="dmgList"></div>
+    </div>
+    <div style="margin-top:14px">
+      <label>หมายเหตุ <span class="req hide" id="noteReq">*</span></label>
+      <textarea id="mNote" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+    </div>
+    <div style="margin-top:14px" id="picPane">
+      <label>ภาพถ่ายตอนคืน <span class="req hide" id="picReq">*</span></label>
+      <label class="up" id="upRet" data-icon="ti ti-camera">
+        <i class="ti ti-camera"></i><b>แนบภาพ</b><span>ถ่ายหรือเลือกไฟล์</span>
+        <div class="ring"><svg width="44" height="44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18"/></svg><b>0%</b></div>
+        <input type="file" accept="image/*" id="fRet">
+      </label>
+      <div class="bar hide" id="retBar"><i></i></div>
+      <div class="thumbs" id="retThumbs"></div>
+    </div>
+    <div id="mErr"></div>
+    <div class="btns">
+      <button class="b" id="mCancel">ยกเลิก</button>
+      <button class="b pri" id="mSave"><i class="ti ti-check"></i> บันทึกคืน</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="upload.js"></script>
+<script src="return.js"></script>
+</body>
+</html>

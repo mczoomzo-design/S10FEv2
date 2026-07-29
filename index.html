@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>รับเครื่อง Samsung S10 FE · นักเรียน</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd-in">
+    <div class="hd-mark"><i class="ti ti-device-tablet"></i></div>
+    <div>
+      <h1>รับเครื่อง Samsung S10 FE</h1>
+      <p>โรงเรียนเลยอนุกูลวิทยา · ปีการศึกษา 2569</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="step"><div class="step-n">1</div><div class="step-t">ข้อมูลนักเรียน</div></div>
+    <div class="grid g2">
+      <div>
+        <label>ระดับชั้น <span class="req">*</span></label>
+        <select id="grade"><option value="">— เลือก —</option></select>
+      </div>
+      <div>
+        <label>ห้อง <span class="req">*</span></label>
+        <select id="room" disabled><option value="">— เลือกชั้นก่อน —</option></select>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label>ชื่อนักเรียน <span class="req">*</span></label>
+      <select id="student" disabled><option value="">— เลือกห้องก่อน —</option></select>
+    </div>
+    <div style="margin-top:14px" id="teacherWrap" class="hide">
+      <label>ครูที่ปรึกษา</label>
+      <input type="text" id="teacher" readonly style="background:var(--line-2)">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step"><div class="step-n">2</div><div class="step-t">สถานะการรับเครื่อง</div></div>
+    <div class="modes">
+      <div class="mode" data-mode="receive"><i class="ti ti-device-tablet"></i><b>รับเครื่อง</b><span>แนบภาพ + สัญญา</span></div>
+      <div class="mode waive" data-mode="waive"><i class="ti ti-ban"></i><b>ไม่รับเครื่อง</b><span>ยืนยันสละสิทธิ์</span></div>
+    </div>
+  </div>
+
+  <!-- รับเครื่อง -->
+  <div id="paneRecv" class="hide">
+    <div class="card">
+      <div class="step"><div class="step-n">3</div><div class="step-t">เลขเครื่อง · วันที่รับ</div></div>
+      <div class="grid g2">
+        <div>
+          <label>เลขเครื่อง VPN <span class="req">*</span></label>
+          <input type="text" id="device" class="mono" list="devList" placeholder="พิมพ์หรือเลือก" autocomplete="off">
+          <datalist id="devList"></datalist>
+          <div class="hint" id="devHint">กำลังโหลด…</div>
+        </div>
+        <div>
+          <label>วันที่รับเครื่อง <span class="req">*</span></label>
+          <input type="date" id="recvDate" class="mono">
+          <div class="hint" id="recvThai"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="step"><div class="step-n">4</div><div class="step-t">เอกสารแนบ</div><div class="step-s" id="upStat">0 / 2</div></div>
+      <div class="ups u2">
+        <label class="up" id="upPhoto" data-icon="ti ti-camera">
+          <i class="ti ti-camera"></i><b>ภาพถ่ายรับเครื่อง</b><span>1 รูป · ถ่ายหรือเลือกไฟล์</span>
+          <div class="ring"><svg width="44" height="44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18"/></svg><b>0%</b></div>
+          <input type="file" accept="image/*" id="fPhoto">
+        </label>
+        <label class="up" id="upCon" data-icon="ti ti-files">
+          <i class="ti ti-files"></i><b>ภาพสัญญา</b><span>2–3 หน้า · ถ่ายหรือเลือกไฟล์</span>
+          <div class="ring"><svg width="44" height="44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18"/></svg><b>0%</b></div>
+          <input type="file" accept="image/*" id="fCon">
+        </label>
+      </div>
+      <div class="bar hide" id="upBar"><i></i></div>
+      <div class="hint" id="upBarTxt" style="text-align:center"></div>
+      <div class="thumbs" id="conThumbs"></div>
+    </div>
+  </div>
+
+  <!-- ไม่รับเครื่อง -->
+  <div id="paneWaive" class="hide">
+    <div class="card">
+      <div class="step"><div class="step-n">3</div><div class="step-t">ยืนยันการสละสิทธิ์</div></div>
+      <label class="chk big" id="waiveChk">
+        <input type="checkbox" id="waive">
+        <span>ข้าพเจ้ายืนยันว่าจะ<b>ไม่รับเครื่อง</b> Samsung S10 FE และขอสละสิทธิ์การยืมในปีการศึกษานี้</span>
+      </label>
+      <div style="margin-top:14px">
+        <label>เหตุผล (ถ้ามี)</label>
+        <textarea id="waiveReason" placeholder="เช่น มีเครื่องส่วนตัวใช้อยู่แล้ว"></textarea>
+      </div>
+      <div style="margin-top:14px">
+        <label>แนบเอกสารสละสิทธิ์ <span class="req" id="waiveDocReq">*</span> <span style="font-weight:400;color:var(--steel)">(1 หน้า)</span></label>
+        <label class="chk" id="laterChk" style="margin-bottom:10px">
+          <input type="checkbox" id="waiveLater">
+          <span>ยังไม่มีเอกสารตอนนี้ — <b>ส่งทีหลัง</b> (ผู้ดูแลจะแนบให้ภายหลัง)</span>
+        </label>
+        <label class="up" id="upWaive" data-icon="ti ti-file-text">
+          <i class="ti ti-file-text"></i><b>เอกสารสละสิทธิ์</b><span>1 รูป · ถ่ายหรือเลือกไฟล์</span>
+          <div class="ring"><svg width="44" height="44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" cx="22" cy="22" r="18"/></svg><b>0%</b></div>
+          <input type="file" accept="image/*" id="fWaive">
+        </label>
+        <div class="bar hide" id="wBar"><i></i></div>
+        <div class="hint" id="wBarTxt" style="text-align:center"></div>
+        <div class="thumbs" id="waiveThumbs"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="errBox"></div>
+  <div class="btns" id="btns" style="display:none">
+    <button class="b pri" id="submit"><i class="ti ti-send"></i> ส่งข้อมูล</button>
+  </div>
+
+  <!-- สำเร็จ -->
+  <div id="done" class="hide">
+    <div class="card done-card">
+      <div class="done-stamp" id="doneStamp"><i class="ti ti-check"></i></div>
+      <b style="font-size:18px;display:block" id="doneTitle">บันทึกเรียบร้อย</b>
+      <p style="font-size:13.5px;color:var(--steel);margin-top:5px" id="doneTxt"></p>
+      <button class="b" style="margin-top:18px;max-width:220px;margin-inline:auto" onclick="location.reload()">
+        <i class="ti ti-plus"></i> บันทึกคนถัดไป
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="upload.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
