@@ -43,6 +43,22 @@ async function login() {
 
 $('#logout').onclick = () => location.reload();
 
+$('#refresh').onclick = async () => {
+  const b = $('#refresh');
+  const orig = b.innerHTML;
+  b.disabled = true;
+  b.innerHTML = '<span class="spin" style="border-color:rgba(18,35,59,.25);border-top-color:var(--ink)"></span> กำลังโหลด';
+  try {
+    await load();
+    toast('อัปเดตข้อมูลแล้ว', 'ok');
+  } catch (e) {
+    toast(e.message, 'err');
+  } finally {
+    b.disabled = false;
+    b.innerHTML = orig;
+  }
+};
+
 async function load() {
   try {
     const [sum, recs] = await Promise.all([call('adminSummary'), call('adminRecords')]);
