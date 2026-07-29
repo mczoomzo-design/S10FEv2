@@ -146,7 +146,7 @@ function showDone(name, phone, status) {
   $('#doneStamp').innerHTML = waive ? '<i class="ti ti-ban"></i>' : '<i class="ti ti-check"></i>';
   $('#doneTitle').textContent = waive ? 'บันทึกการสละสิทธิ์แล้ว' : 'รับเครื่องเรียบร้อย';
   $('#doneTxt').textContent = name + ' · ' + phone + ' · สถานะ: ' + status;
-  $$('.card, #btns, #paneRecv, #paneWaive').forEach(x => { if (x.id !== 'done') x.classList.add('hide'); });
+  $$('.card, #btns, #paneRecv, #paneWaive').forEach(x => { if (x.id !== 'done' && !x.closest('#done')) x.classList.add('hide'); });
   $('#btns').style.display = 'none';
   $('#done').classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
