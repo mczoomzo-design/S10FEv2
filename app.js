@@ -10,6 +10,17 @@ let photoUp, conUp, waiveUp;
 
 async function boot() {
   if (!guardConfig()) return;
+
+  // ตรวจว่าไฟล์ HTML/JS ตรงเวอร์ชันกัน (กันกรณีอัปโหลด GitHub ไม่ครบ)
+  const need = ['#grade', '#room', '#student', '#device', '#submit', '#upPhoto', '#upCon'];
+  const miss = need.filter(s => !$(s));
+  if (miss.length) {
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div class="note err" style="margin:16px">ไฟล์เว็บไม่ตรงเวอร์ชันกัน (ขาด: ' + miss.join(', ') +
+      ') — กรุณาอัปโหลด index.html, app.js, upload.js, config.js, style.css ใหม่ให้ครบทุกไฟล์บน GitHub</div>');
+    return;
+  }
+
   $('#recvDate').value = todayISO();
   $('#recvThai').textContent = 'พ.ศ. ' + thaiDate(todayISO());
 
@@ -24,6 +35,7 @@ async function boot() {
     const d = await api('bootstrap');
     TREE = d.grades;
     const g = $('#grade');
+    if (!TREE.length) { showErr('ยังไม่มีข้อมูลนักเรียนในระบบ — กรุณากรอกชีต Students แล้วลองใหม่'); return; }
     TREE.forEach(x => g.add(new Option(x.grade, x.grade)));
   } catch (e) {
     showErr('โหลดข้อมูลไม่สำเร็จ: ' + e.message);
@@ -35,19 +47,22 @@ function setBusy(b) { BUSY = b; }
 
 function syncUpStat() {
   const n = (photoUp.count() ? 1 : 0) + (conUp.count() >= 2 ? 1 : 0);
-  $('#upStat').textContent = n + ' / 2';
+  const el = $('#upStat'); if (el) el.textContent = n + ' / 2';
 }
 
-$('#grade').onchange = e => {
+/** ผูก event แบบปลอดภัย ข้ามถ้าไม่มี element */
+function on(sel, ev, fn) { const el = $(sel); if (el) el.addEventListener(ev, fn); }
+
+on('#grade', 'change', e => {
   const g = TREE.find(x => x.grade === e.target.value);
   const room = $('#room');
   room.innerHTML = '<option value="">— เลือก —</option>';
   room.disabled = !g;
   if (g) g.rooms.forEach(r => room.add(new Option('ห้อง ' + r, r)));
   resetStudents();
-};
+});
 
-$('#room').onchange = async e => {
+on('#room', 'change', async e => {
   resetStudents();
   if (!e.target.value) return;
   try {
@@ -61,7 +76,7 @@ $('#room').onchange = async e => {
       s.add(o);
     });
   } catch (err) { showErr(err.message); }
-};
+});
 
 function resetStudents() {
   STUDENTS = [];
@@ -71,7 +86,7 @@ function resetStudents() {
   $('#teacherWrap').classList.add('hide');
 }
 
-$('#student').onchange = e => {
+on('#student', 'change', e => {
   const st = STUDENTS.find(x => x.no === e.target.value);
   if (st && st.teacher) {
     $('#teacher').value = st.teacher;
@@ -79,9 +94,9 @@ $('#student').onchange = e => {
   } else {
     $('#teacherWrap').classList.add('hide');
   }
-};
+});
 
-$('#recvDate').onchange = e => $('#recvThai').textContent = e.target.value ? 'พ.ศ. ' + thaiDate(e.target.value) : '';
+on('#recvDate', 'change', e => $('#recvThai').textContent = e.target.value ? 'พ.ศ. ' + thaiDate(e.target.value) : '');
 
 // เลือกโหมด
 $$('.mode').forEach(m => m.onclick = async () => {
@@ -124,17 +139,17 @@ function checkDevice() {
   else if (FREE.some(x => x.toLowerCase() === v.toLowerCase())) { h.className = 'hint ok'; h.textContent = '✓ เครื่องว่าง พร้อมจ่าย'; }
   else { h.className = 'hint warn'; h.textContent = 'ℹ ไม่มีเลขนี้ในระบบ — จะบันทึกเป็นเครื่องใหม่'; }
 }
-$('#device').oninput = checkDevice;
+on('#device', 'input', checkDevice);
 
 // สละสิทธิ์
-$('#waive').onchange = e => $('#waiveChk').classList.toggle('on', e.target.checked);
-$('#waiveLater').onchange = e => {
+on('#waive', 'change', e => $('#waiveChk').classList.toggle('on', e.target.checked));
+on('#waiveLater', 'change', e => {
   const later = e.target.checked;
   $('#laterChk').classList.toggle('on', later);
   $('#upWaive').classList.toggle('hide', later);
   $('#waiveDocReq').classList.toggle('hide', later);
   if (later) waiveUp.reset();
-};
+});
 
 function showErr(msg) {
   $('#errBox').innerHTML = `<div class="note err"><i class="ti ti-alert-circle"></i><div>${msg}</div></div>`;
@@ -142,7 +157,7 @@ function showErr(msg) {
 }
 function clearErr() { $('#errBox').innerHTML = ''; }
 
-$('#submit').onclick = async () => {
+on('#submit', 'click', async () => {
   clearErr();
   if (BUSY) return toast('รอรูปประมวลผลเสร็จก่อน', 'err');
 
@@ -185,7 +200,7 @@ $('#submit').onclick = async () => {
     btn.disabled = false;
     btn.innerHTML = MODE === 'waive' ? '<i class="ti ti-ban"></i> ยืนยันสละสิทธิ์' : '<i class="ti ti-send"></i> ส่งข้อมูล';
   }
-};
+});
 
 function showDone(name, sub, status) {
   const waive = status === 'สละสิทธิ์';

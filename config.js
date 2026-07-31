@@ -7,7 +7,7 @@
    → คัดลอก URL ที่ลงท้ายด้วย /exec (ไม่ใช่ /dev)
 ============================================================ */
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyuH_OTVIB1t15xFhDDhJ22AYLRbr4522npUVlFogzWNWlHAXZICdR9piqak9u2db5_/exec';
+const API_URL = 'PASTE_YOUR_GAS_WEB_APP_URL_HERE';
 
 
 /* ===== ห้ามแก้ใต้บรรทัดนี้ ===== */
