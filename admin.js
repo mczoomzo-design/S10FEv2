@@ -1,17 +1,18 @@
-/* admin.js — หน้าผู้ดูแลระบบ */
+/* admin.js — หน้าผู้ดูแลระบบ (ไม่มีการล็อกอิน — เข้าถึงได้ทันทีตามลิงก์) */
 
 const DMG_LIST = ['จอแตก/ร้าว', 'เปิดไม่ติด / แบตเสีย', 'ตัวเครื่องบุบ/รอยขีดข่วน',
   'ปากกา S Pen หาย/ชำรุด', 'เคส/ที่ชาร์จ ไม่ครบ', 'อื่นๆ'];
 
-let SESS = '';
 let RECS = [];
 let SUM = null;
 let CUR = null;      // แถวที่กำลังคืน
 let retUp;
 let BUSY = false;
 
-/** เรียก API พร้อม session */
-function call(action, payload) { return api(action, Object.assign({ session: SESS }, payload || {})); }
+function call(action, payload) { return api(action, payload || {}); }
+
+/** ผูก event แบบปลอดภัย ข้ามถ้าไม่มี element (กัน crash เวลาไฟล์ไม่ตรงเวอร์ชัน) */
+function on(sel, ev, fn) { const el = $(sel); if (el) el.addEventListener(ev, fn); }
 
 async function boot() {
   if (!guardConfig()) return;
@@ -20,30 +21,10 @@ async function boot() {
   $$('#dmgList input').forEach(c => c.onchange = e => e.target.closest('.chk').classList.toggle('on', e.target.checked));
   retUp = makeUploader({ box: '#upRet', bar: '#retBar', thumbs: '#retThumbs',
     defaultLabel: 'ถ่ายหรือเลือกไฟล์', onBusy: b => BUSY = b });
+  await load();
 }
 
-// ---------- login ----------
-$('#go').onclick = login;
-$('#p').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-async function login() {
-  $('#loginErr').innerHTML = '';
-  const btn = $('#go');
-  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> กำลังเข้าสู่ระบบ…';
-  try {
-    const d = await api('adminLogin', { user: $('#u').value, pass: $('#p').value });
-    SESS = d.session;
-    $('#login').classList.add('hide');
-    $('#dash').classList.remove('hide');
-    await load();
-  } catch (e) {
-    $('#loginErr').innerHTML = `<div class="note err"><i class="ti ti-alert-circle"></i><div>${e.message}</div></div>`;
-    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> เข้าสู่ระบบ';
-  }
-}
-
-$('#logout').onclick = () => location.reload();
-
-$('#refresh').onclick = async () => {
+on('#refresh', 'click', async () => {
   const b = $('#refresh');
   const orig = b.innerHTML;
   b.disabled = true;
@@ -57,7 +38,7 @@ $('#refresh').onclick = async () => {
     b.disabled = false;
     b.innerHTML = orig;
   }
-};
+});
 
 async function load() {
   try {
@@ -100,18 +81,18 @@ function populateFilters() {
     el.value = keep;
   });
 }
-$('#fg').onchange = () => { syncRooms('#fg', '#fr', 'ทั้งหมด'); renderRecs(); };
-$('#tg').onchange = () => syncRooms('#tg', '#tr2', 'เลือก');
+on('#fg', 'change', () => { syncRooms('#fg', '#fr', 'ทั้งหมด'); renderRecs(); });
+on('#tg', 'change', () => syncRooms('#tg', '#tr2', 'เลือก'));
 function syncRooms(gSel, rSel, allLabel) {
   const g = $(gSel).value;
   const el = $(rSel);
   el.innerHTML = '<option value="">' + allLabel + '</option>';
   if (g) SUM.rooms.filter(x => x.grade === g).forEach(x => el.add(new Option('ห้อง ' + x.room, x.room)));
 }
-$('#ft').onchange = renderRecs;
-$('#fr').onchange = renderRecs;
-$('#fs').onchange = renderRecs;
-$('#fq').oninput = renderRecs;
+on('#ft', 'change', renderRecs);
+on('#fr', 'change', renderRecs);
+on('#fs', 'change', renderRecs);
+on('#fq', 'input', renderRecs);
 
 // ---------- records table ----------
 function filtered() {
@@ -198,7 +179,7 @@ function renderSummary() {
 }
 
 // ---------- token ----------
-$('#genTok').onclick = async () => {
+on('#genTok', 'click', async () => {
   const g = $('#tg').value, r = $('#tr2').value;
   if (!g || !r) return toast('เลือกชั้นและห้องก่อน', 'err');
   $('#tokOut').innerHTML = '<div class="hint">กำลังสร้าง…</div>';
@@ -215,10 +196,10 @@ $('#genTok').onclick = async () => {
     </div></div>`;
     $('#copyTok').onclick = () => { navigator.clipboard.writeText(d.url); toast('คัดลอกแล้ว', 'ok'); };
   } catch (e) { $('#tokOut').innerHTML = `<div class="note err"><i class="ti ti-alert-circle"></i><div>${e.message}</div></div>`; }
-};
+});
 
 // ---------- CSV export ----------
-$('#exp').onclick = () => {
+on('#exp', 'click', () => {
   const H = ['ประเภท', 'ชั้น', 'ห้อง', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'เบอร์โทร', 'ครูที่ปรึกษา', 'เลขเครื่อง', 'สถานะ',
     'วันที่รับ', 'วันที่คืน', 'สภาพเครื่อง', 'รายการชำรุด', 'หมายเหตุ', 'ผู้รับคืน', 'เหตุผลสละสิทธิ์'];
   const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
@@ -230,7 +211,7 @@ $('#exp').onclick = () => {
   a.href = url; a.download = 'S10FE-records-' + todayISO() + '.csv';
   a.click(); URL.revokeObjectURL(url);
   toast('ดาวน์โหลด CSV แล้ว', 'ok');
-};
+});
 
 // ---------- return modal ----------
 function openReturn(row, name, dev) {
@@ -254,10 +235,10 @@ function openReturn(row, name, dev) {
   document.body.style.overflow = 'hidden';
 }
 function closeReturn() { $('#mask').classList.remove('on'); document.body.style.overflow = ''; CUR = null; }
-$('#mClose').onclick = closeReturn;
-$('#mCancel').onclick = closeReturn;
-$('#mask').onclick = e => { if (e.target === $('#mask')) closeReturn(); };
-$('#mDate').onchange = e => $('#mThai').textContent = e.target.value ? 'พ.ศ. ' + thaiDate(e.target.value) : '';
+on('#mClose', 'click', closeReturn);
+on('#mCancel', 'click', closeReturn);
+on('#mask', 'click', e => { if (e.target === $('#mask')) closeReturn(); });
+on('#mDate', 'change', e => $('#mThai').textContent = e.target.value ? 'พ.ศ. ' + thaiDate(e.target.value) : '');
 
 $$('input[name=cond]').forEach(r => r.onchange = e => {
   $$('#conds .rad').forEach(x => x.classList.remove('on'));
@@ -272,7 +253,7 @@ $$('input[name=cond]').forEach(r => r.onchange = e => {
 
 function mErr(m) { $('#mErr').innerHTML = `<div class="note err"><i class="ti ti-alert-circle"></i><div>${m}</div></div>`; }
 
-$('#mSave').onclick = async () => {
+on('#mSave', 'click', async () => {
   $('#mErr').innerHTML = '';
   if (BUSY) return toast('รอรูปประมวลผลเสร็จก่อน', 'err');
   const cond = ($$('input[name=cond]').find(x => x.checked) || {}).value;
@@ -298,7 +279,7 @@ $('#mSave').onclick = async () => {
     mErr(e.message);
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> บันทึกคืน';
   }
-};
+});
 
 // ---------- attach waiver doc later ----------
 async function attachDoc(row, name, btn) {
@@ -334,15 +315,15 @@ async function loadSettings() {
       : `โฟลเดอร์ปัจจุบัน: <a href="${d.folderUrl}" target="_blank" style="color:var(--blue)">${d.folderName}</a>${owner}<br>บัญชีสคริปต์: <span class="mono">${d.scriptAccount}</span>`;
   } catch (e) { toast(e.message, 'err'); }
 }
-$('#saveUrl').onclick = () => saveSetting({ siteUrl: $('#setUrl').value }, 'บันทึก URL แล้ว');
-$('#savePass').onclick = () => {
+on('#saveUrl', 'click', () => saveSetting({ siteUrl: $('#setUrl').value }, 'บันทึก URL แล้ว'));
+on('#savePass', 'click', () => {
   if (!$('#setPass').value.trim()) return toast('กรอกรหัสผ่านใหม่ก่อน', 'err');
   saveSetting({ newPass: $('#setPass').value }, 'เปลี่ยนรหัสผ่านแล้ว', () => $('#setPass').value = '');
-};
-$('#saveFolder').onclick = () => {
+});
+on('#saveFolder', 'click', () => {
   if (!$('#setFolder').value.trim()) return toast('วาง URL หรือ ID โฟลเดอร์ก่อน', 'err');
   saveSetting({ folderId: $('#setFolder').value }, 'ย้ายโฟลเดอร์แล้ว', () => { $('#setFolder').value = ''; loadSettings(); });
-};
+});
 async function saveSetting(payload, okMsg, after) {
   $('#setErr').innerHTML = '';
   try {
