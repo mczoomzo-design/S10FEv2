@@ -46,19 +46,8 @@
 </header>
 
 <div class="wrap">
-  <!-- login -->
-  <div id="login" class="login-wrap">
-    <div class="card">
-      <div class="step"><div class="step-n"><i class="ti ti-lock" style="font-size:14px"></i></div><div class="step-t">เข้าสู่ระบบ</div></div>
-      <div style="margin-bottom:12px"><label>ชื่อผู้ใช้</label><input type="text" id="u" autocomplete="username"></div>
-      <div style="margin-bottom:14px"><label>รหัสผ่าน</label><input type="password" id="p" autocomplete="current-password"></div>
-      <div id="loginErr"></div>
-      <button class="b pri" id="go" style="width:100%"><i class="ti ti-login"></i> เข้าสู่ระบบ</button>
-    </div>
-  </div>
-
-  <!-- dashboard -->
-  <div id="dash" class="hide">
+  <!-- dashboard (ไม่มีการล็อกอิน — เข้าได้ทันทีตามลิงก์) -->
+  <div id="dash">
     <div class="tabs">
       <div class="tab on" data-tab="records">รายการทั้งหมด</div>
       <div class="tab" data-tab="summary">สรุปรายห้อง</div>
@@ -130,7 +119,6 @@
         <button class="sm pri" id="saveFolder" style="margin-top:10px"><i class="ti ti-device-floppy"></i> บันทึกโฟลเดอร์</button>
       </div>
       <div id="setErr"></div>
-      <button class="b" id="logout" style="margin-top:6px"><i class="ti ti-logout"></i> ออกจากระบบ</button>
     </div>
   </div>
 </div>
