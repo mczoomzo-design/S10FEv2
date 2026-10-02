@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <style>
+  .admin-page .wrap, .admin-page .hd-in { max-width: 1560px; }
+  .record-details { white-space: normal; min-width: 200px; max-width: 320px; }
+  .record-actions { display: flex; flex-wrap: wrap; gap: 6px; min-width: 190px; }
+  .repair-history { margin-top: 6px; font-size: 12px; color: var(--steel); }
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
   @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
   .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 13px; }
@@ -35,7 +39,7 @@
   .sumtable td:first-child { font-family: var(--sans); text-align: left; font-weight: 600; }
 </style>
 </head>
-<body>
+<body class="admin-page">
 
 <header class="hd">
   <div class="hd-in">
@@ -70,7 +74,7 @@
       <div style="font-size:12px;color:var(--steel);margin-bottom:8px" id="rCnt"></div>
       <div class="tw-scroll">
         <table>
-          <thead><tr><th>ประเภท</th><th>รหัส/เบอร์</th><th>ชื่อ-สกุล</th><th>เลขเครื่อง</th><th>สถานะ</th><th>รับ</th><th>คืน</th><th>สภาพ</th><th>ไฟล์</th><th></th></tr></thead>
+          <thead><tr><th>ประเภท</th><th>รหัส/เบอร์</th><th>ชื่อ-สกุล</th><th>เลขเครื่อง</th><th>สถานะ</th><th>รับ</th><th>คืน</th><th>สภาพ / ชำรุด / เปลี่ยนเครื่อง</th><th>ไฟล์</th><th>จัดการ</th></tr></thead>
           <tbody id="recTb"></tbody>
         </table>
       </div>
@@ -160,6 +164,30 @@
       <button class="b pri" id="mSave"><i class="ti ti-check"></i> บันทึกคืน</button>
     </div>
   </div>
+</div>
+
+<div class="mask" id="serviceMask">
+  <form class="modal" id="serviceForm">
+    <div class="modal-h"><b>แจ้งชำรุด / เปลี่ยนเครื่อง</b><button type="button" id="serviceClose" aria-label="ปิด">×</button></div>
+    <p><b id="serviceName"></b></p>
+    <p class="mono" id="serviceDevice"></p>
+    <label for="serviceDate">วันที่ดำเนินการ <span class="req">*</span></label>
+    <input type="date" id="serviceDate" required>
+    <label for="serviceDamage" style="margin-top:14px">ชำรุดอะไร / อาการที่พบ <span class="req">*</span></label>
+    <textarea id="serviceDamage" required maxlength="2000" placeholder="เช่น จอแตก มุมขวาบน / เปิดไม่ติด / แบตเตอรี่บวม"></textarea>
+    <label class="chk" style="margin:14px 0"><input type="checkbox" id="serviceReplace"><span>เปลี่ยนเป็นเครื่องใหม่</span></label>
+    <div id="serviceNewPane" class="hide">
+      <label for="serviceNewDevice">รหัสเครื่องใหม่ <span class="req">*</span></label>
+      <input type="text" id="serviceNewDevice" list="serviceDevices" maxlength="100" placeholder="ระบุรหัสเครื่องใหม่">
+      <datalist id="serviceDevices"></datalist>
+      <p class="hint">ระบบตรวจสอบว่าเครื่องใหม่ไม่ซ้ำกับเครื่องเดิม และไม่ถูกยืมหรือแจ้งชำรุดอยู่</p>
+    </div>
+    <div id="serviceErr" role="alert"></div>
+    <div class="btns">
+      <button type="button" class="b" id="serviceCancel">ยกเลิก</button>
+      <button type="submit" class="b pri" id="serviceSave">บันทึก</button>
+    </div>
+  </form>
 </div>
 
 <div class="toast" id="toast"></div>
