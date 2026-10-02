@@ -127,6 +127,17 @@ function condBadge(r) {
   return `<span class="bg" style="background:${bg};color:${c}">${r.condition}</span>`;
 }
 
+function escapeText(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+}
+function serviceDetails(r) {
+  const history = Array.isArray(r.serviceHistory) ? r.serviceHistory : [];
+  return condBadge(r) + (r.damage ? '<div class="repair-history">' + escapeText(r.damage) + '</div>' : '') +
+    history.map(h => '<div class="repair-history">' + escapeText(thaiDate(h.date)) + ' · ' +
+      escapeText(h.oldDevice) + (h.newDevice ? ' → ' + escapeText(h.newDevice) : ' · แจ้งชำรุด') +
+      '<br>' + escapeText(h.damage) + '</div>').join('');
+}
+
 function renderRecs() {
   const list = filtered();
   $('#rCnt').textContent = list.length + ' รายการ';
@@ -146,15 +157,16 @@ function renderRecs() {
     const who = isT ? `<span class="bg" style="background:var(--blue-bg);color:var(--blue)">ครู</span>` : `<b>${r.grade}</b>/${r.room}`;
     const idcol = isT ? (r.phone || '—') : r.no;
     let act = '';
-    if (r.status === 'กำลังยืม') act = `<button class="sm pri" data-ret="${r.row}" data-name="${r.name}" data-dev="${r.device}">คืน</button>`;
+    if (r.status === 'กำลังยืม') act = `<button class="sm pri" data-ret="${r.row}" data-name="${r.name}" data-dev="${r.device}">คืน</button><button class="sm" data-service="${r.row}">ชำรุด / เปลี่ยนเครื่อง</button>`;
     else if (r.status === 'สละสิทธิ์' && !r.waiveDoc) act = `<button class="sm" data-attach="${r.row}" data-name="${r.name}">แนบเอกสาร</button>`;
     return `<tr class="${cls}">
       <td>${who}</td><td class="mono">${idcol}</td><td>${r.name}</td>
       <td class="mono">${r.device || '—'}</td><td>${statusBadge(r)}</td>
       <td class="mono">${thaiDate(r.receiveDate)}</td><td class="mono">${thaiDate(r.returnDate)}</td>
-      <td>${condBadge(r)}</td><td style="font-size:15px">${files || '—'}</td><td>${act}</td>
+      <td class="record-details">${serviceDetails(r)}</td><td style="font-size:15px">${files || '—'}</td><td><div class="record-actions">${act}</div></td>
     </tr>`;
   }).join('');
+  $$('[data-service]').forEach(b => b.onclick = () => openService(Number(b.dataset.service)));
   $$('[data-ret]').forEach(b => b.onclick = () => openReturn(Number(b.dataset.ret), b.dataset.name, b.dataset.dev));
   $$('[data-attach]').forEach(b => b.onclick = () => attachDoc(Number(b.dataset.attach), b.dataset.name, b));
 }
@@ -201,10 +213,10 @@ on('#genTok', 'click', async () => {
 // ---------- CSV export ----------
 on('#exp', 'click', () => {
   const H = ['ประเภท', 'ชั้น', 'ห้อง', 'รหัสนักเรียน', 'ชื่อ-สกุล', 'เบอร์โทร', 'ครูที่ปรึกษา', 'เลขเครื่อง', 'สถานะ',
-    'วันที่รับ', 'วันที่คืน', 'สภาพเครื่อง', 'รายการชำรุด', 'หมายเหตุ', 'ผู้รับคืน', 'เหตุผลสละสิทธิ์'];
+    'วันที่รับ', 'วันที่คืน', 'สภาพเครื่อง', 'รายการชำรุด', 'หมายเหตุ', 'ผู้รับคืน', 'เหตุผลสละสิทธิ์', 'ประวัติชำรุด / เปลี่ยนเครื่อง'];
   const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
   const rows = filtered().map(r => [r.type || 'นักเรียน', r.grade, r.room, r.no, r.name, r.phone || '', r.teacher, r.device, r.status,
-    thaiDate(r.receiveDate), thaiDate(r.returnDate), r.condition, r.damage, r.note, r.receiver, r.waiveReason].map(esc).join(','));
+    thaiDate(r.receiveDate), thaiDate(r.returnDate), r.condition, r.damage, r.note, r.receiver, r.waiveReason, (r.serviceHistory || []).map(h => [h.date, h.oldDevice, h.newDevice || '', h.damage].join(' | ')).join('\n')].map(esc).join(','));
   const csv = '\ufeff' + [H.map(esc).join(','), ...rows].join('\n');
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
@@ -332,3 +344,68 @@ async function saveSetting(payload, okMsg, after) {
 }
 
 boot();
+
+// ---------- damage reports / replacement ----------
+let SERVICE_RECORD = null;
+let SERVICE_BUSY = false;
+async function openService(row) {
+  const record = RECS.find(r => r.row === row);
+  if (!record) return;
+  SERVICE_RECORD = record;
+  $('#serviceForm').reset();
+  $('#serviceName').textContent = record.name;
+  $('#serviceDevice').textContent = 'เครื่องปัจจุบัน: ' + record.device;
+  $('#serviceDate').value = todayISO();
+  $('#serviceDamage').value = record.damage || '';
+  $('#serviceNewPane').classList.add('hide');
+  $('#serviceNewDevice').required = false;
+  $('#serviceDevices').innerHTML = '';
+  $('#serviceErr').textContent = '';
+  $('#serviceMask').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  try {
+    const d = await call('getDevices');
+    if (SERVICE_RECORD !== record) return;
+    $('#serviceDevices').innerHTML = d.free.map(v => '<option value="' + escapeText(v) + '"></option>').join('');
+  } catch (e) { toast(e.message, 'err'); }
+}
+function closeService() {
+  if (SERVICE_BUSY) return;
+  $('#serviceMask').classList.remove('on');
+  document.body.style.overflow = '';
+  SERVICE_RECORD = null;
+}
+on('#serviceClose', 'click', closeService);
+on('#serviceCancel', 'click', closeService);
+on('#serviceMask', 'click', e => { if (e.target === $('#serviceMask')) closeService(); });
+on('#serviceReplace', 'change', e => {
+  $('#serviceNewPane').classList.toggle('hide', !e.target.checked);
+  $('#serviceNewDevice').required = e.target.checked;
+});
+on('#serviceForm', 'submit', async e => {
+  e.preventDefault();
+  if (SERVICE_BUSY || !SERVICE_RECORD) return;
+  const damage = $('#serviceDamage').value.trim();
+  const newDevice = $('#serviceReplace').checked ? $('#serviceNewDevice').value.trim() : '';
+  const fail = message => { $('#serviceErr').textContent = message; };
+  if (!damage) return fail('กรุณาระบุว่าชำรุดอะไร');
+  if (!$('#serviceDate').value) return fail('กรุณาระบุวันที่');
+  if ($('#serviceReplace').checked && !newDevice) return fail('กรุณาระบุรหัสเครื่องใหม่');
+  if (newDevice && newDevice.toLowerCase() === SERVICE_RECORD.device.trim().toLowerCase()) return fail('รหัสเครื่องใหม่ต้องต่างจากเครื่องเดิม');
+  SERVICE_BUSY = true;
+  $('#serviceSave').disabled = true;
+  $('#serviceSave').textContent = 'กำลังบันทึก…';
+  try {
+    await call('adminServiceDevice', {row: SERVICE_RECORD.row, expectedDevice: SERVICE_RECORD.device,
+      date: $('#serviceDate').value, damage, newDevice});
+    SERVICE_BUSY = false;
+    closeService();
+    toast(newDevice ? 'บันทึกเปลี่ยนเครื่องแล้ว' : 'บันทึกชำรุดแล้ว', 'ok');
+    await load();
+  } catch (err) { fail(err.message); }
+  finally {
+    SERVICE_BUSY = false;
+    $('#serviceSave').disabled = false;
+    $('#serviceSave').textContent = 'บันทึก';
+  }
+});
