@@ -316,10 +316,6 @@ async function loadSettings() {
   } catch (e) { toast(e.message, 'err'); }
 }
 on('#saveUrl', 'click', () => saveSetting({ siteUrl: $('#setUrl').value }, 'บันทึก URL แล้ว'));
-on('#savePass', 'click', () => {
-  if (!$('#setPass').value.trim()) return toast('กรอกรหัสผ่านใหม่ก่อน', 'err');
-  saveSetting({ newPass: $('#setPass').value }, 'เปลี่ยนรหัสผ่านแล้ว', () => $('#setPass').value = '');
-});
 on('#saveFolder', 'click', () => {
   if (!$('#setFolder').value.trim()) return toast('วาง URL หรือ ID โฟลเดอร์ก่อน', 'err');
   saveSetting({ folderId: $('#setFolder').value }, 'ย้ายโฟลเดอร์แล้ว', () => { $('#setFolder').value = ''; loadSettings(); });

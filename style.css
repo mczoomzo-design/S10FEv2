@@ -107,7 +107,7 @@ label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); 
 .g2 { grid-template-columns: 1fr 1fr; }
 @media (max-width: 560px) { .g2 { grid-template-columns: 1fr; } }
 
-input[type=text], input[type=tel], input[type=date], input[type=password], select, textarea {
+input[type=text], input[type=tel], input[type=date], select, textarea {
   width: 100%;
   font-family: var(--sans);
   font-size: 16px;                 /* กัน iOS zoom */
